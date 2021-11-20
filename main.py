@@ -7,6 +7,8 @@ from selenium import webdriver
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from selenium.webdriver.remote.file_detector import LocalFileDetector
 
+from src import exceptions
+
 from src.login import confirm_logged_in, login_using_cookie_file
 from src.upload import upload_file
 
@@ -54,6 +56,9 @@ def main():
             kids=args.kids,
             upload_time=args.upload_time,
         )
+    except (exceptions.DailyUploadLimitReachedException):
+        driver.close()
+        exit(1)
     except:
         driver.close()
         raise

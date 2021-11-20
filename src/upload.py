@@ -3,13 +3,15 @@ import re
 from datetime import datetime
 from time import sleep
 
+from . import exceptions
+
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
-from selenium.common.exceptions import NoSuchElementException, ElementNotInteractableException
+from selenium.common.exceptions import NoSuchElementException, ElementNotInteractableException, ElementClickInterceptedException
 
 
 def upload_file(
@@ -99,7 +101,16 @@ def _set_basic_settings(driver: WebDriver, title: str = None, description: str =
 
 def _set_advanced_settings(driver: WebDriver, game_title: str, made_for_kids: bool):
     # Open advanced options
-    driver.find_element_by_css_selector("#toggle-button").click()
+    try:
+        driver.find_element_by_css_selector("#toggle-button").click()
+    except (ElementClickInterceptedException):
+        upload_limit_label: WebElement = driver.find_element_by_xpath(
+            '//ytcp-uploads-dialog//tp-yt-paper-dialog[@class="style-scope ytcp-uploads-dialog"]//div[@class="error-short style-scope ytcp-uploads-dialog"]'
+        )
+        if upload_limit_label.text == 'Daily upload limit reached':
+            logging.error("Daily upload limit has been reached. Try again later.")
+            raise exceptions.DailyUploadLimitReachedException
+
     if game_title:
         game_title_input: WebElement = driver.find_element_by_css_selector(
             ".ytcp-form-gaming > "
