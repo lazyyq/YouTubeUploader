@@ -97,14 +97,16 @@ def get_arg_parser() -> argparse.ArgumentParser:
         "--title",
         help="This argument declares the title of the uploaded video.",
         type=str,
-        required=True,
+        default=None,
+        required=False,
     )
     parser.add_argument(
         "-d",
         "--description",
         help="This argument declares the description of the uploaded video.",
         type=str,
-        required=True,
+        default=None,
+        required=False,
     )
     parser.add_argument(
         "-g",
@@ -128,7 +130,7 @@ def get_arg_parser() -> argparse.ArgumentParser:
              "(Example: 2021-04-04T20:00:00)",
         required=False,
         type=datetime.fromisoformat,
-        default=datetime(today.year, today.month, today.day, 20, 15),
+        default=None,
     )
     return parser
 
