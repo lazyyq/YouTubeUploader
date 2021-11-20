@@ -56,8 +56,9 @@ def upload_file(
 
 def _wait_for_processing(driver):
     # Wait for processing to complete
-    progress_label: WebElement = driver.find_element_by_css_selector("span.progress-label")
-    pattern = re.compile(r"(finished processing)|(processing hd.*)|(check.*)")
+    progress_label: WebElement = driver.find_element_by_xpath('//tp-yt-paper-dialog[@class="style-scope ytcp-uploads-dialog"]//span[@class="progress-label style-scope ytcp-video-upload-progress"]')
+    pattern = re.compile(r"(upload complete.*)|(.*processing.*)|(check.*)")
+    #pattern = re.compile(r"(.*업로드 완료.*)|(.*처리 중.*)|(.*검사가 완료되었습니다.*)")
     current_progress = progress_label.get_attribute("textContent")
     last_progress = None
     while not pattern.match(current_progress.lower()):
@@ -66,6 +67,7 @@ def _wait_for_processing(driver):
         last_progress = current_progress
         sleep(5)
         current_progress = progress_label.get_attribute("textContent")
+    logging.info(f'Pattern matches! Current progress: {current_progress}')
 
 
 def _set_basic_settings(driver: WebDriver, title: str = None, description: str = None, thumbnail_path: str = None):
@@ -73,15 +75,14 @@ def _set_basic_settings(driver: WebDriver, title: str = None, description: str =
         EC.element_to_be_clickable(
             (
                 By.XPATH,
-                '//ytcp-mention-textbox[@label="Title"]//div[@id="textbox"]',
-
+                '//ytcp-social-suggestions-textbox[@id="title-textarea"]//div[@id="textbox"]',
             )
         )
     )
 
     # Input meta data (title, description, etc ... )
     description_input: WebElement = driver.find_element_by_xpath(
-        '//ytcp-mention-textbox[@label="Description"]//div[@id="textbox"]'
+        '//div[@id="description-container"]//div[@id="textbox"]'
     )
     thumbnail_input: WebElement = driver.find_element_by_css_selector(
         "input#file-loader"
