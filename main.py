@@ -66,11 +66,11 @@ def main():
             upload_time=args.upload_time,
         )
     except (exceptions.DailyUploadLimitReachedException):
-        driver.close()
         exit(1)
     except:
-        driver.close()
         raise
+    finally:
+        driver.quit()
 
 
 def get_arg_parser() -> argparse.ArgumentParser:
