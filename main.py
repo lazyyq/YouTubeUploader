@@ -6,15 +6,28 @@ from datetime import datetime
 from selenium import webdriver
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from selenium.webdriver.remote.file_detector import LocalFileDetector
+from selenium.common.exceptions import WebDriverException
 
-from src import exceptions
+from src.exceptions import DailyUploadLimitReachedException
 
 from src.login import confirm_logged_in, login_using_cookie_file
 from src.upload import upload_file
 
+def wrap_main():
+    while True:
+        try:
+            main()
+            break
+
+        except WebDriverException as e:
+            print("Detected error: " + str(e))
+            if str(e) == "chrome not reachable":
+                continue
+            else:
+                raise
 
 def main():
-    logging.getLogger().setLevel(logging.INFO)
+    logging.basicConfig(format='[%(asctime)s] %(levelname)s: %(message)s', datefmt='%H:%M', level=logging.INFO)
 
     # Setup Selenium web driver
     parser = get_arg_parser()
@@ -65,7 +78,7 @@ def main():
             kids=args.kids,
             upload_time=args.upload_time,
         )
-    except (exceptions.DailyUploadLimitReachedException):
+    except (DailyUploadLimitReachedException):
         exit(1)
     except:
         raise
@@ -157,4 +170,4 @@ def get_arg_parser() -> argparse.ArgumentParser:
 
 
 if __name__ == "__main__":
-    main()
+    wrap_main()

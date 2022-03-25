@@ -43,7 +43,7 @@ def login_using_cookie_file(driver: WebDriver, cookie_file: str):
 def confirm_logged_in(driver: WebDriver) -> bool:
     """ Confirm that the user is logged in. The browser needs to be navigated to a YouTube page. """
     try:
-        WebDriverWait(driver, 5).until(EC.element_to_be_clickable((By.ID, "avatar-btn")))
+        WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.ID, "avatar-btn")))
         return True
     except TimeoutError:
         return False

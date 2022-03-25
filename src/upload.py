@@ -3,7 +3,7 @@ import re
 from datetime import datetime
 from time import sleep
 
-from . import exceptions
+from .exceptions import DailyUploadLimitReachedException
 
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
@@ -58,7 +58,13 @@ def upload_file(
 
 def _wait_for_processing(driver):
     # Wait for processing to complete
-    progress_label: WebElement = driver.find_element_by_xpath('//tp-yt-paper-dialog[@class="style-scope ytcp-uploads-dialog"]//span[@class="progress-label style-scope ytcp-video-upload-progress"]')
+    progress_label: WebElement = WebDriverWait(driver, 10).until(
+        EC.element_to_be_clickable((
+               By.XPATH,
+               '//tp-yt-paper-dialog[@class="style-scope ytcp-uploads-dialog"]//span[@class="progress-label style-scope ytcp-video-upload-progress"]'
+           )
+        )
+    )
     pattern = re.compile(r"(upload complete.*)|(.*processing.*)|(check.*)")
     #pattern = re.compile(r"(.*업로드 완료.*)|(.*처리 중.*)|(.*검사가 완료되었습니다.*)")
     current_progress = progress_label.get_attribute("textContent")
@@ -109,7 +115,7 @@ def _set_advanced_settings(driver: WebDriver, game_title: str, made_for_kids: bo
         )
         if upload_limit_label.text == 'Daily upload limit reached':
             logging.error("Daily upload limit has been reached. Try again later.")
-            raise exceptions.DailyUploadLimitReachedException
+            raise DailyUploadLimitReachedException
 
     if game_title:
         game_title_input: WebElement = driver.find_element_by_css_selector(
